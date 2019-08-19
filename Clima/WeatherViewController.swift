@@ -11,19 +11,19 @@ import CoreLocation
 import Alamofire
 import SwiftyJSON
 
-class WeatherViewController: UIViewController, CLLocationManagerDelegate {
+class WeatherViewController: UIViewController, CLLocationManagerDelegate, ChangeCityDelegate {
+
+    
     
     //Constants
     let WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather"
     let APP_ID = "f5d227c354897ff90c52807c0cb72eaa"
     /***Get your own App ID at https://openweathermap.org/appid ****/
     
-
-    //TODO: Declare instance variables here
     
     let locationManager = CLLocationManager()
-    
-    //Pre-linked IBOutlets
+    let weatherDataModel = WeatherDataModel()
+
     @IBOutlet weak var weatherIcon: UIImageView!
     @IBOutlet weak var cityLabel: UILabel!
     @IBOutlet weak var temperatureLabel: UILabel!
@@ -47,7 +47,6 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     //MARK: - Networking
     /***************************************************************/
     
-    //Write the getWeatherData method here:
     func getWeatherData(url: String, parameters: [String: String]){
         
         Alamofire.request(url, method: .get, parameters: parameters).responseJSON {
@@ -63,31 +62,34 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             
         }
     }
-
-    
-    
-    
-    
     
     //MARK: - JSON Parsing
     /***************************************************************/
    
-    
-    //Write the updateWeatherData method here:
     func updateWeatherData(json : JSON){
-        let tempResult = json["main"]["temp"]
-        print(tempResult)
+        if let tempResult = json["main"]["temp"].double {
+            
+            weatherDataModel.temp = Int(tempResult - 273.15)
+            
+            weatherDataModel.city = json["name"].stringValue
+            weatherDataModel.condition = json["weather"][0]["id"].intValue
+            weatherDataModel.weatherIconName = weatherDataModel.updateWeatherIcon(condition: weatherDataModel.condition)
+            updateUIWithWeatherData()
+        } else {
+            cityLabel.text = "Weather data unavailable"
+        }
+
     }
 
-    
-    
-    
     //MARK: - UI Updates
     /***************************************************************/
     
-    
-    //Write the updateUIWithWeatherData method here:
-    
+    func updateUIWithWeatherData() {
+        cityLabel.text = weatherDataModel.city
+        temperatureLabel.text = "\(weatherDataModel.temp)°"
+        weatherIcon.image = UIImage(named: weatherDataModel.weatherIconName)
+        
+    }
     
     
     
@@ -96,8 +98,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     //MARK: - Location Manager Delegate Methods
     /***************************************************************/
     
-    
-    //Write the didUpdateLocations method here:
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let location = locations[locations.count - 1]
         if location.horizontalAccuracy > 0 {
@@ -115,8 +116,6 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         }
     }
     
-    
-    //Write the didFailWithError method here:
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
         cityLabel.text = "Location not found"
@@ -129,15 +128,18 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     /***************************************************************/
     
     
-    //Write the userEnteredANewCityName Delegate method here:
+    func userEnteredAnewcityName(city: String) {
+        <#code#>
+    }
     
 
-    
-    //Write the PrepareForSegue Method here
-    
-    
-    
-    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "changeCityName" {
+            let destinationVC = segue.destination as! ChangeCityViewController
+            destinationVC.delegate = self
+            
+        }
+    }
     
 }
 
