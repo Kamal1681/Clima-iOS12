@@ -129,7 +129,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
     
     
     func userEnteredAnewcityName(city: String) {
-        <#code#>
+        
     }
     
 
