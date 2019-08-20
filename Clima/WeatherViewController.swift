@@ -128,7 +128,9 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate, Change
     /***************************************************************/
     
     
-    func userEnteredAnewcityName(city: String) {
+    func userEnteredANewCityName(city: String) {
+        let params : [String : String] = ["q" : city, "appid" : APP_ID]
+        getWeatherData(url: WEATHER_URL, parameters: params)
         
     }
     
